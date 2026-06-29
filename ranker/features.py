@@ -38,7 +38,8 @@ def extract_skills_features(candidate: dict) -> dict:
         endorsements = skill.get("endorsements", 0)
         duration = skill.get("duration_months", 0)
 
-        trust = prof * min(1.0, endorsements / 10.0) * min(1.0, (duration or 1) / 24.0)
+        safe_dur = max(duration, 6) if duration else 6
+        trust = prof * min(1.0, endorsements/10.0) * min(1.0, safe_dur/24.0)
 
         for group_name, group_skills in SYNONYM_GROUPS.items():
             if name in group_skills:
@@ -93,7 +94,18 @@ def extract_career_features(candidate: dict) -> dict:
 
     for job in career:
         desc = job.get("description", "") or ""
-        all_descriptions.append(desc)
+        end_raw = job.get("end_date")
+        if end_raw:
+            try:
+                end_date = datetime.strptime(end_raw, "%Y-%m-%d").date()
+            except ValueError:
+                end_date = REFERENCE_DATE
+        else:
+            end_date = REFERENCE_DATE  # current job
+
+        years_ago = max(0, (REFERENCE_DATE - end_date).days / 365)
+        recency_weight = 1.0 / (1.0 + years_ago * 0.3)  # decay ~23% per year
+        all_descriptions.append(desc * int(max(1, round(recency_weight * 3))))
         company = _safe_lower(job.get("company", ""))
         companies_lower.add(company)
         duration = job.get("duration_months", 0) or 0

@@ -105,8 +105,8 @@ TIER1_INDIA_CITIES = {
 FIT_WEIGHTS = {
     "skills": 0.30,
     "career": 0.25,
-    "title": 0.15,
-    "semantic": 0.10,
+    "title": 0.10, 
+    "semantic": 0.15,
     "yoe": 0.10,
     "location": 0.05,
     "education": 0.05,
@@ -161,7 +161,7 @@ EVAL_KEYWORDS = [
 # --- Experience ---
 
 YOE_IDEAL = 7.0
-YOE_SIGMA = 2.0
+YOE_SIGMA = 3.0
 
 # --- Education ---
 

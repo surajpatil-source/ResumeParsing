@@ -3,6 +3,24 @@
 from .config import MUST_HAVE_SKILLS, STRONG_SIGNAL_SKILLS
 
 
+def _extract_highlight(candidate: dict) -> str:
+    """Pull one concrete detail from career descriptions."""
+    for job in reversed(candidate.get("career_history", [])):
+        desc = (job.get("description") or "").strip()
+        company = job.get("company", "")
+        if not desc:
+            continue
+        for kw in ["million", "billion", "latency", "serving", "scale",
+                   "real-time", "production", "deployed", "A/B", "NDCG",
+                   "search", "RAG", "vector", "embedding", "ranking"]:
+            if kw.lower() in desc.lower():
+                sentences = [s.strip() for s in desc.split(".") if kw.lower() in s.lower()]
+                if sentences:
+                    snippet = sentences[0][:80]
+                    return f"at {company}: {snippet.lower()}"
+    return ""
+
+
 def generate_reasoning(candidate: dict, features: dict, final_score: float) -> str:
     profile = candidate.get("profile", {})
     signals = candidate.get("redrob_signals", {})
@@ -21,8 +39,11 @@ def generate_reasoning(candidate: dict, features: dict, final_score: float) -> s
     if ss and not mh:
         parts.append(f"ML skills: {', '.join(sorted(ss)[:3])}")
 
-    if features.get("career_relevance", 0) > 0.5:
-        parts.append("strong production AI/retrieval evidence in career history")
+    highlight = _extract_highlight(candidate)
+    if highlight:
+        parts.append(highlight)
+    elif features.get("career_relevance", 0) > 0.5:
+        parts.append("strong retrieval/ML signal in career history")
     elif features.get("production_score", 0) > 0.3:
         parts.append("has production deployment experience")
 

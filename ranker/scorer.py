@@ -34,7 +34,7 @@ def compute_behavioral_modifier(features: dict) -> float:
         BEHAVIORAL_WEIGHTS["quality"] * features["quality"] +
         BEHAVIORAL_WEIGHTS["notice_period"] * features["notice_period_score"]
     )
-    return 0.5 + 0.7 * raw
+    return 0.80 + 0.25 * raw
 
 
 def compute_final_score(features: dict, semantic_sim: float = 0.0) -> float:

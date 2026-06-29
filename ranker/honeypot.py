@@ -124,6 +124,7 @@ def compute_honeypot_probability(candidate: dict) -> float:
         check_expert_zero_duration(candidate),
         check_yoe_vs_career_span(candidate),
         check_start_after_end(candidate),
+        check_title_description_mismatch(candidate),
     ]
     combined = 0.0
     for s in scores:
