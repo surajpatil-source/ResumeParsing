@@ -90,6 +90,10 @@ CONSULTING_FIRMS = {
     "tcs", "infosys", "wipro", "accenture", "cognizant", "capgemini",
     "hcl", "hcl technologies", "mindtree", "tech mahindra", "mphasis",
     "l&t infotech", "ltimindtree",
+    # Global consulting — also non-product backgrounds
+    "deloitte", "pwc", "kpmg", "ey", "ernst & young", "ibm global services",
+    "ibm consulting", "bosch global", "hexaware", "niit technologies",
+    "oracle consulting", "sap consulting",
 }
 
 # --- Location Scoring ---
@@ -139,6 +143,12 @@ RETRIEVAL_KEYWORDS = [
     "embedding", "vector", "retrieval", "search", "faiss", "pinecone",
     "rag", "semantic", "ranking", "recommendation", "rerank", "ndcg",
     "mrr", "recall", "bm25", "index", "query", "relevance",
+    # Additional terms for candidates who built real systems without using product names
+    "approximate nearest neighbor", "ann", "hnsw", "ivf", "quantization",
+    "dense retrieval", "sparse retrieval", "hybrid search", "cross-encoder",
+    "bi-encoder", "two-stage", "re-rank", "reciprocal rank fusion", "rrf",
+    "colbert", "splade", "matryoshka", "inverted index", "tf-idf",
+    "knowledge graph", "entity linking", "question answering", "passage retrieval",
 ]
 
 ML_KEYWORDS = [

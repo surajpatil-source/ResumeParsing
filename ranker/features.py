@@ -138,6 +138,16 @@ def extract_career_features(candidate: dict) -> dict:
     consulting_only = (not has_product_exp) and total_months_at_consulting > 0
     consulting_ratio = total_months_at_consulting / max(total_months, 1)
 
+    # Job-hopper penalty: JD explicitly flags avg tenure < 18 months as unwanted
+    num_jobs = len(career)
+    avg_tenure_months = total_months / max(num_jobs, 1)
+    if avg_tenure_months < 12:
+        job_hopper_penalty = 0.70
+    elif avg_tenure_months < 18:
+        job_hopper_penalty = 0.85
+    else:
+        job_hopper_penalty = 1.0
+
     return {
         "career_relevance": career_relevance,
         "retrieval_score": retrieval_score,
@@ -147,6 +157,8 @@ def extract_career_features(candidate: dict) -> dict:
         "consulting_only": consulting_only,
         "consulting_ratio": consulting_ratio,
         "has_product_exp": has_product_exp,
+        "avg_tenure_months": avg_tenure_months,
+        "job_hopper_penalty": job_hopper_penalty,
     }
 
 

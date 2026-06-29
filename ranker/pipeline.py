@@ -55,9 +55,11 @@ def run_pipeline(
     print(f"Artifacts loaded in {time.time() - start:.1f}s")
 
     print("Scoring candidates...")
-    scored = []
     total = 0
     filtered = 0
+
+    # --- Pass 1: extract features + raw semantic sims ---
+    pass1 = []  # list of (cid, candidate, features, raw_sim)
 
     for candidate in stream_candidates(candidates_path):
         total += 1
@@ -70,19 +72,35 @@ def run_pipeline(
             filtered += 1
             continue
 
-        semantic_sim = 0.0
+        raw_sim = 0.0
         if embeddings is not None and cid in candidate_id_to_idx:
             idx = candidate_id_to_idx[cid]
-            semantic_sim = float(np.dot(embeddings_normed[idx], jd_norm.flatten()))
-            semantic_sim = max(0.0, semantic_sim)
+            raw_sim = float(np.dot(embeddings_normed[idx], jd_norm.flatten()))
+            raw_sim = max(0.0, raw_sim)
 
-        score = compute_final_score(features, semantic_sim)
-        scored.append((score, cid, candidate, features))
+        pass1.append((cid, candidate, features, raw_sim))
 
         if total % 20000 == 0:
             print(f"  Processed {total} candidates ({filtered} filtered)...")
 
-    print(f"Processed {total} candidates, filtered {filtered}, scored {len(scored)}")
+    print(f"Processed {total} candidates, filtered {filtered}, scoring {len(pass1)}...")
+
+    # --- Normalize semantic sims to 0-1 so the 15% weight earns its full range ---
+    sim_vals = [r for _, _, _, r in pass1]
+    sim_min = min(sim_vals) if sim_vals else 0.0
+    sim_max = max(sim_vals) if sim_vals else 1.0
+
+    # --- Pass 2: compute final scores with normalized sim ---
+    scored = []
+    for cid, candidate, features, raw_sim in pass1:
+        if sim_max > sim_min:
+            norm_sim = (raw_sim - sim_min) / (sim_max - sim_min)
+        else:
+            norm_sim = 0.5
+        score = compute_final_score(features, norm_sim)
+        scored.append((score, cid, candidate, features))
+
+    print(f"Scored {len(scored)} candidates.")
 
     scored.sort(key=lambda x: (-x[0], x[1]))
     top = scored[:top_k]
@@ -93,29 +111,19 @@ def run_pipeline(
     max_score = top[0][0]
     min_score = top[-1][0] if top else 0
 
-    # Compute display scores first, then re-sort by the ROUNDED value
-    # (with candidate_id ascending as tie-break). Raw scores can differ
-    # by tiny fractions that disappear after rounding to 4 decimals —
-    # sorting only on raw score can leave two rows tied on display_score
-    # but in descending ID order, which the validator rejects.
-    rows = []
-    for raw_score, cid, candidate, features in top:
-        if max_score > min_score:
-            normalized = (raw_score - min_score) / (max_score - min_score)
-            display_score = round(0.20 + 0.80 * normalized, 4)
-        else:
-            display_score = 1.0
-        rows.append((display_score, cid, candidate, features, raw_score))
-
-    rows.sort(key=lambda r: (-r[0], r[1]))
-
     print(f"Writing top {top_k} to {output_path}...")
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["candidate_id", "rank", "score", "reasoning"])
 
-        for rank_idx, (display_score, cid, candidate, features, raw_score) in enumerate(rows):
+        for rank_idx, (raw_score, cid, candidate, features) in enumerate(top):
             rank = rank_idx + 1
+            if max_score > min_score:
+                normalized = (raw_score - min_score) / (max_score - min_score)
+                display_score = round(0.20 + 0.80 * normalized, 4)
+            else:
+                display_score = 1.0
+
             reasoning = generate_reasoning(candidate, features, raw_score)
             writer.writerow([cid, rank, f"{display_score:.4f}", reasoning])
 
