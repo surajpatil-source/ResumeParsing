@@ -124,12 +124,22 @@ if st.button("Rank Candidates", type="primary"):
         writer.writerow(["candidate_id", "rank", "score", "reasoning"])
         max_s = top[0]["score"] if top else 1
         min_s = top[-1]["score"] if top else 0
-        for rank, entry in enumerate(top, 1):
+
+        # Compute display scores, then re-sort by the ROUNDED value
+        # (candidate_id ascending as tie-break) — same fix as rank.py,
+        # since raw-score order can disagree with ID order once rounded.
+        export_rows = []
+        for entry in top:
             if max_s > min_s:
                 norm_score = round(0.20 + 0.80 * (entry["score"] - min_s) / (max_s - min_s), 4)
             else:
                 norm_score = 1.0
-            writer.writerow([entry["candidate_id"], rank, f"{norm_score:.4f}", entry["reasoning"]])
+            export_rows.append((norm_score, entry["candidate_id"], entry["reasoning"]))
+
+        export_rows.sort(key=lambda r: (-r[0], r[1]))
+
+        for rank, (norm_score, cid, reasoning) in enumerate(export_rows, 1):
+            writer.writerow([cid, rank, f"{norm_score:.4f}", reasoning])
 
         st.download_button("Download CSV", csv_buf.getvalue(), "ranked_candidates.csv", "text/csv")
 

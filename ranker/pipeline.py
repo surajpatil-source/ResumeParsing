@@ -93,19 +93,29 @@ def run_pipeline(
     max_score = top[0][0]
     min_score = top[-1][0] if top else 0
 
+    # Compute display scores first, then re-sort by the ROUNDED value
+    # (with candidate_id ascending as tie-break). Raw scores can differ
+    # by tiny fractions that disappear after rounding to 4 decimals —
+    # sorting only on raw score can leave two rows tied on display_score
+    # but in descending ID order, which the validator rejects.
+    rows = []
+    for raw_score, cid, candidate, features in top:
+        if max_score > min_score:
+            normalized = (raw_score - min_score) / (max_score - min_score)
+            display_score = round(0.20 + 0.80 * normalized, 4)
+        else:
+            display_score = 1.0
+        rows.append((display_score, cid, candidate, features, raw_score))
+
+    rows.sort(key=lambda r: (-r[0], r[1]))
+
     print(f"Writing top {top_k} to {output_path}...")
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["candidate_id", "rank", "score", "reasoning"])
 
-        for rank_idx, (raw_score, cid, candidate, features) in enumerate(top):
+        for rank_idx, (display_score, cid, candidate, features, raw_score) in enumerate(rows):
             rank = rank_idx + 1
-            if max_score > min_score:
-                normalized = (raw_score - min_score) / (max_score - min_score)
-                display_score = round(0.20 + 0.80 * normalized, 4)
-            else:
-                display_score = 1.0
-
             reasoning = generate_reasoning(candidate, features, raw_score)
             writer.writerow([cid, rank, f"{display_score:.4f}", reasoning])
 
