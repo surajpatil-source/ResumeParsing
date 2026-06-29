@@ -102,6 +102,7 @@ def run_pipeline(
 
     print(f"Scored {len(scored)} candidates.")
 
+    # Sort: descending score, ascending candidate_id for ties (validator requirement)
     scored.sort(key=lambda x: (-x[0], x[1]))
     top = scored[:top_k]
 
@@ -120,12 +121,15 @@ def run_pipeline(
             rank = rank_idx + 1
             if max_score > min_score:
                 normalized = (raw_score - min_score) / (max_score - min_score)
-                display_score = round(0.20 + 0.80 * normalized, 4)
+                # Use 6 decimal places to avoid tied display scores triggering
+                # validator tie-break errors (raw scores are unique; rounding to 4dp
+                # can collapse distinct raw scores into the same display value)
+                display_score = round(0.20 + 0.80 * normalized, 6)
             else:
                 display_score = 1.0
 
             reasoning = generate_reasoning(candidate, features, raw_score)
-            writer.writerow([cid, rank, f"{display_score:.4f}", reasoning])
+            writer.writerow([cid, rank, f"{display_score:.6f}", reasoning])
 
     elapsed = time.time() - start
     print(f"Done in {elapsed:.1f}s. Output: {output_path}")
