@@ -1,0 +1,95 @@
+# Redrob Hackathon — Submission Metadata
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "HiredByAI"
+
+primary_contact:
+  name: "Suraj Patil"
+  email: "suraj.patil@ves.ac.in"
+  phone: "+91-8655325402"
+
+team_members:
+  - name: "Suraj Patil"
+    email: "suraj.patil@ves.ac.in"
+    organization: "Accenture"
+    country: "India"
+    role: "Team Lead"
+  - name: "Ronak Dedhiya"
+    email: "ronak.dedhiya@niramai.com"
+    organization: "Niramai"
+    country: "India"
+    role: "Member"
+  - name: "Akshay Gaikwad"
+    email: "akshay.gaikwad@ves.ac.in"
+    organization: "Capgemini"
+    country: "India"
+    role: "Member"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/surajpatil-source/ResumeParsing"  # TODO: Make sure this repo exists and is public
+
+# IMPORTANT: The link below must point to a RUNNABLE sandbox — not your profile page.
+# codesandbox.io/u/surajpatil-source is your profile, not a sandbox.
+# Create a CodeSandbox project from your GitHub repo and paste that URL here.
+# Example format: https://codesandbox.io/p/github/surajpatil-source/ResumeParsing/main
+# Alternatively, deploy app.py to Streamlit Cloud (free) at share.streamlit.io
+# and use that URL instead — it is the simplest option.
+sandbox_link: "PASTE_YOUR_RUNNABLE_SANDBOX_URL_HERE"  # TODO: See note above
+
+reproduce_command: "python rank.py --candidates Dataset/candidates.jsonl --output submission.csv"
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Azure VM Standard_D4s_v3"
+  cpu_cores: 4
+  ram_gb: 16
+  python_version: "3.11.5"
+  os: "Ubuntu 22.04 (Linux 5.15.0-1089-azure)"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: true
+  pre_computation_time_minutes: 10
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Claude"
+
+ai_usage_summary: |
+  Used Claude (Claude Sonnet) for architecture design, code implementation,
+  and iterative debugging. No candidate data was fed to any external LLM during
+  ranking. The ranking system runs entirely offline using pre-computed embeddings
+  from sentence-transformers (local model).
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  Two-phase hybrid ranker: (1) Pre-compute 384-dim sentence-transformer embeddings
+  for 100K candidates + detect honeypots via 5 integrity checks (duration mismatch,
+  expert-zero-duration, YOE vs career span, start-after-end, title-description mismatch).
+  (2) At runtime, stream candidates through a 3-layer scoring pipeline: hard filters
+  (honeypots, consulting-only, non-tech), composite fit score (skills 30%, career text 25%,
+  title 10%, semantic 15%, YOE 10%, location 5%, education 5%), and a behavioral
+  modifier (0.80-1.05x multiplier on availability, quality signals, notice period).
+  Skill trust scoring penalizes claimed expertise without endorsement/duration evidence.
+  Synonym groups prevent penalizing equivalent tools. Career text analysis uses recency
+  weighting so recent experience contributes more than older roles. Runtime: ~20 seconds
+  on CPU, 0 honeypots in top 100.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true

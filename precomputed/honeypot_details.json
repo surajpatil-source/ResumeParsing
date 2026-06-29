@@ -1,0 +1,258 @@
+[
+  {
+    "id": "CAND_0003582",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0016000",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0033817",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0033972",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0036839",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0042245",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0046649",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0046689",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0048740",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0055792",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0056983",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0060642",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0061722",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0063888",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0065096",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0070429",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0072379",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0073853",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0095140",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0095317",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0095480",
+    "probability": 0.8
+  },
+  {
+    "id": "CAND_0003430",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0005291",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0007413",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0010770",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0013536",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0024752",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0025579",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0033131",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0036299",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0038431",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0039754",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0052478",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0055992",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0065787",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0066405",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0071115",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0074119",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0077250",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0086808",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0090900",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0091068",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0091534",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0093331",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0095619",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0096150",
+    "probability": 0.6
+  },
+  {
+    "id": "CAND_0007353",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0008960",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0010294",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0018515",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0035104",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0037539",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0040075",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0040853",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0043721",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0053734",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0055685",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0057711",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0064077",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0065710",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0070189",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0077239",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0084182",
+    "probability": 0.4
+  },
+  {
+    "id": "CAND_0093364",
+    "probability": 0.4
+  }
+]
