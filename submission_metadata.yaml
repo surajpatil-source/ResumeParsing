@@ -30,15 +30,9 @@ team_members:
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "https://github.com/surajpatil-source/ResumeParsing"  # TODO: Make sure this repo exists and is public
+github_repo: "https://github.com/surajpatil-source/ResumeParsing"
 
-# IMPORTANT: The link below must point to a RUNNABLE sandbox — not your profile page.
-# codesandbox.io/u/surajpatil-source is your profile, not a sandbox.
-# Create a CodeSandbox project from your GitHub repo and paste that URL here.
-# Example format: https://codesandbox.io/p/github/surajpatil-source/ResumeParsing/main
-# Alternatively, deploy app.py to Streamlit Cloud (free) at share.streamlit.io
-# and use that URL instead — it is the simplest option.
-sandbox_link: "https://resumeparsing-xgcjyrc8u6ubt3xmtp7feg.streamlit.app/"  # TODO: See note above
+sandbox_link: "https://resumeparsing-xgcjyrc8u6ubt3xmtp7feg.streamlit.app/"
 
 reproduce_command: "python rank.py --candidates Dataset/candidates.jsonl --output submission.csv"
 
@@ -72,17 +66,55 @@ ai_usage_summary: |
 # Approach summary
 # ============================================================================
 methodology_summary: |
-  Two-phase hybrid ranker: (1) Pre-compute 384-dim sentence-transformer embeddings
-  for 100K candidates + detect honeypots via 5 integrity checks (duration mismatch,
-  expert-zero-duration, YOE vs career span, start-after-end, title-description mismatch).
-  (2) At runtime, stream candidates through a 3-layer scoring pipeline: hard filters
-  (honeypots, consulting-only, non-tech), composite fit score (skills 30%, career text 25%,
-  title 10%, semantic 15%, YOE 10%, location 5%, education 5%), and a behavioral
-  modifier (0.80-1.05x multiplier on availability, quality signals, notice period).
-  Skill trust scoring penalizes claimed expertise without endorsement/duration evidence.
-  Synonym groups prevent penalizing equivalent tools. Career text analysis uses recency
-  weighting so recent experience contributes more than older roles. Runtime: ~20 seconds
-  on CPU, 0 honeypots in top 100.
+  Two-phase hybrid ranker:
+
+  Phase 1 — Pre-computation (run once, ~63 minutes):
+  Generate 384-dim sentence-transformer embeddings (all-MiniLM-L6-v2) for all
+  100K candidates and the job description. Simultaneously detect honeypot candidates
+  via 5 integrity checks: duration mismatch between claimed and actual tenure,
+  expert-proficiency skills with zero duration, claimed YOE exceeding career span
+  by 3+ years, jobs with start date after end date, and tech-title/non-tech-description
+  mismatch. 4,722 honeypots identified and indexed.
+
+  Phase 2 — Ranking (runtime ~27 seconds, CPU only, no network):
+  Candidates are streamed through a 3-layer pipeline:
+
+  Layer 1 — Hard filters: removes honeypots, consulting-only backgrounds (no product
+  company experience), non-tech titles with no career relevance, and pure research
+  profiles (high ML signal but zero production deployment evidence).
+
+  Layer 2 — Composite fit score (7 dimensions):
+    - Skills (30%): must-have skill weighted score (RAG, vector DBs, embeddings,
+      semantic search, BM25, LTR etc.) + strong-signal skills + Python presence +
+      skill trust score (proficiency × endorsements × duration)
+    - Career relevance (25%): keyword hit scoring across retrieval, ML, production,
+      and evaluation keyword sets with recency decay weighting; expanded retrieval
+      keywords include HNSW, cross-encoder, bi-encoder, RRF, ColBERT, SPLADE etc.
+      to reward candidates who built real systems without using product buzzwords
+    - Title relevance (10%): tiered title scoring from Lead AI Engineer (1.0) down
+      to non-technical roles (0.0)
+    - Semantic similarity (15%): cosine similarity between candidate embedding and
+      JD embedding, min-max normalized across the full candidate pool so the score
+      spans 0-1 and earns its full weight allocation
+    - Years of experience (10%): Gaussian fit centered at 7 years (sigma=3),
+      with hard penalties outside 2-15 year range
+    - Location (5%): Pune/Noida ideal (1.0), Tier-1 India cities (0.9),
+      rest of India with relocation (0.8), rest of India (0.6)
+    - Education (5%): institution tier + CS/AI field bonus + advanced degree bonus
+
+  Layer 3 — Behavioral modifier (multiplier on fit score):
+    Two-tier ghost candidate system based on JD's explicit test cases:
+    - Hard ghost (inactive 6m+, recruiter response rate <15%, not open to work):
+      modifier capped at 0.55-0.70x
+    - Soft ghost (recency <0.40, response rate <0.20, not open to work):
+      modifier capped at 0.70-0.80x
+    - Normal candidates: modifier range 0.80-1.05x based on availability,
+      profile quality, and notice period signals
+    Job-hopper penalty applied as additional multiplier: 0.70x for avg tenure
+    <12 months, 0.85x for <18 months, 1.0x otherwise.
+
+  Result: 18,641 candidates filtered (including all 4,722 honeypots), 81,359 scored,
+  top 100 written to submission.csv. Zero honeypots in top 100.
 
 # ============================================================================
 # Declarations
