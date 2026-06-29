@@ -1,0 +1,4 @@
+# Large data files - too big for GitHub
+Dataset/candidates.jsonl
+precomputed/embeddings.npy
+precomputed/candidate_ids.json
