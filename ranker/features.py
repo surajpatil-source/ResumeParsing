@@ -10,6 +10,9 @@ from .config import (
     RETRIEVAL_KEYWORDS, ML_KEYWORDS, PRODUCTION_KEYWORDS, EVAL_KEYWORDS,
     YOE_IDEAL, YOE_SIGMA, EDUCATION_TIER_SCORES, CS_AI_FIELDS,
     REFERENCE_DATE,
+    LANGCHAIN_SHALLOW_KEYWORDS, PRE_LLM_SUBSTANCE_KEYWORDS,
+    CV_SPEECH_ROBOTICS_KEYWORDS, NLP_IR_OVERLAP_KEYWORDS,
+    EXTERNAL_VALIDATION_KEYWORDS,
 )
 
 
@@ -159,6 +162,80 @@ def extract_career_features(candidate: dict) -> dict:
         "has_product_exp": has_product_exp,
         "avg_tenure_months": avg_tenure_months,
         "job_hopper_penalty": job_hopper_penalty,
+    }
+
+
+# ---- 2b. JD-Specific Trap Detection ----
+# Three disqualifiers the JD calls out explicitly that weren't previously
+# checked anywhere in the pipeline:
+#   1. Recent (<12mo) LangChain/API-wrapper-only "AI experience" with no
+#      pre-LLM-era IR/ranking substance anywhere in career.
+#   2. CV/speech/robotics-heavy background with no real NLP/IR overlap.
+#   3. Senior (5+ yrs) candidates with zero external validation signal
+#      (no open-source/publications/talks) — soft penalty only, per JD's
+#      own framing ("we need to see how you think, not just trust it").
+
+def extract_trap_features(candidate: dict) -> dict:
+    career = candidate.get("career_history", [])
+    skills = candidate.get("skills", [])
+    yoe = candidate.get("profile", {}).get("years_of_experience", 0) or 0.0
+
+    skill_names_lower = " ".join(_safe_lower(s.get("name", "")) for s in skills)
+
+    # --- Trap 1: LangChain-only recent AI experience ---
+    recent_text_parts = []
+    older_text_parts = []
+    for job in career:
+        desc = _safe_lower(job.get("description", "") or "")
+        end_raw = job.get("end_date")
+        end_date = _parse_date_safe(end_raw) if end_raw else REFERENCE_DATE
+        if end_date is None:
+            end_date = REFERENCE_DATE
+        months_ago = (REFERENCE_DATE - end_date).days / 30.44
+        if months_ago <= 12:
+            recent_text_parts.append(desc)
+        else:
+            older_text_parts.append(desc)
+
+    recent_text = " ".join(recent_text_parts)
+    full_text = " ".join(recent_text_parts + older_text_parts) + " " + skill_names_lower
+
+    recent_is_langchain_shallow = (
+        bool(recent_text) and
+        _count_keyword_hits(recent_text, LANGCHAIN_SHALLOW_KEYWORDS) > 0
+    )
+    has_pre_llm_substance = _count_keyword_hits(full_text, PRE_LLM_SUBSTANCE_KEYWORDS) >= 2
+
+    is_langchain_trap = recent_is_langchain_shallow and not has_pre_llm_substance
+    langchain_trap_penalty = 0.65 if is_langchain_trap else 1.0
+
+    # --- Trap 2: CV/speech/robotics heavy, no NLP/IR overlap ---
+    cv_speech_hits = _count_keyword_hits(full_text, CV_SPEECH_ROBOTICS_KEYWORDS)
+    nlp_ir_hits = _count_keyword_hits(full_text, NLP_IR_OVERLAP_KEYWORDS)
+
+    is_cv_speech_trap = cv_speech_hits >= 3 and nlp_ir_hits < 2
+    cv_speech_trap_penalty = 0.70 if is_cv_speech_trap else 1.0
+
+    # --- Trap 3: senior, closed-source-only, no external validation (soft) ---
+    # Use the actual github_activity_score signal rather than text keyword
+    # matching — most job descriptions don't mention "github"/"paper" even
+    # for candidates who are genuinely active, so text search was firing
+    # on ~66% of the pool. The numeric signal is far more reliable.
+    github_score = candidate.get("redrob_signals", {}).get("github_activity_score", -1)
+    has_external_validation = (
+        github_score >= 20 or
+        _count_keyword_hits(full_text, EXTERNAL_VALIDATION_KEYWORDS) > 0
+    )
+    is_closed_source_senior = yoe >= 5.0 and not has_external_validation
+    closed_source_penalty = 0.92 if is_closed_source_senior else 1.0
+
+    return {
+        "is_langchain_trap": is_langchain_trap,
+        "langchain_trap_penalty": langchain_trap_penalty,
+        "is_cv_speech_trap": is_cv_speech_trap,
+        "cv_speech_trap_penalty": cv_speech_trap_penalty,
+        "is_closed_source_senior": is_closed_source_senior,
+        "closed_source_penalty": closed_source_penalty,
     }
 
 
@@ -388,6 +465,7 @@ def extract_all_features(candidate: dict) -> dict:
     features = {}
     features.update(extract_skills_features(candidate))
     features.update(extract_career_features(candidate))
+    features.update(extract_trap_features(candidate))
     features.update(extract_title_features(candidate))
     features.update(extract_yoe_features(candidate))
     features.update(extract_location_features(candidate))
