@@ -335,9 +335,18 @@ def extract_location_features(candidate: dict) -> dict:
     mode_scores = {"hybrid": 1.0, "flexible": 0.9, "onsite": 0.8, "remote": 0.6}
     mode_score = mode_scores.get(work_mode, 0.7)
 
+    # JD: "Outside India: case-by-case, but we don't sponsor work visas."
+    # A candidate who is (a) outside India, (b) unwilling to relocate, and
+    # (c) wants fully remote is a practical hiring blocker, not just a soft
+    # location preference. The 5% location weight alone is too small to
+    # reflect this, so it's applied as a separate multiplier instead.
+    visa_blocker = (not is_india) and (not relocate) and (work_mode == "remote")
+    visa_blocker_penalty = 0.55 if visa_blocker else 1.0
+
     return {
         "location_score": loc_score * 0.7 + mode_score * 0.3,
         "is_india": is_india,
+        "visa_blocker_penalty": visa_blocker_penalty,
     }
 
 
