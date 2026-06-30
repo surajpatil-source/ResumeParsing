@@ -113,6 +113,7 @@ def run_pipeline(
     min_score = top[-1][0] if top else 0
 
     print(f"Writing top {top_k} to {output_path}...")
+    seen_snippets = set()
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["candidate_id", "rank", "score", "reasoning"])
@@ -128,7 +129,7 @@ def run_pipeline(
             else:
                 display_score = 1.0
 
-            reasoning = generate_reasoning(candidate, features, raw_score)
+            reasoning = generate_reasoning(candidate, features, raw_score, seen_snippets)
             writer.writerow([cid, rank, f"{display_score:.6f}", reasoning])
 
     elapsed = time.time() - start
