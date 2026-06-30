@@ -53,7 +53,7 @@ def main():
     print("STEP 2: Detecting honeypots...")
     print("=" * 60)
     start = time.time()
-    honeypot_ids = detect_honeypots(candidates, threshold=0.5)
+    honeypot_ids = detect_honeypots(candidates, threshold=0.4)
     print(f"Detected {len(honeypot_ids)} honeypots in {time.time() - start:.1f}s")
 
     hp_details = []
