@@ -34,7 +34,7 @@ github_repo: "https://github.com/surajpatil-source/ResumeParsing"
 
 sandbox_link: "https://resumeparsing-xgcjyrc8u6ubt3xmtp7feg.streamlit.app/"
 
-reproduce_command: "python rank.py --candidates Dataset/candidates.jsonl --output submission.csv"
+reproduce_command: "python precompute.py --candidates Dataset/candidates.jsonl --jd Dataset/job_description.docx --output-dir precomputed && python rank.py --candidates Dataset/candidates.jsonl --output submission.csv --precomputed precomputed"
 
 # ============================================================================
 # Compute environment
