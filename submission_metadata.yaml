@@ -66,6 +66,11 @@ ai_usage_summary: |
 # Approach summary
 # ============================================================================
 methodology_summary: |
+  See EXPLAINABILITY.md in the repo root for worked examples of each
+  trap-detection rule applied to real candidates (a honeypot, a
+  LangChain-wrapper trap, a ghost candidate, a job-hopper, and a
+  CV/speech-without-NLP trap), with actual scores and penalty values.
+
   Two-phase hybrid ranker:
 
   Phase 1 — Pre-computation (run once, ~51 minutes on a 4-core CPU, no GPU):
