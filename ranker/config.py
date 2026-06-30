@@ -192,3 +192,39 @@ CS_AI_FIELDS = {
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
+
+# --- LangChain-only / no pre-LLM-era ML trap (JD-stated disqualifier) ---
+# "AI experience" that's just wiring LangChain to OpenAI, with nothing
+# showing real pre-LLM-era IR/ranking/ML substance, should be penalized.
+LANGCHAIN_SHALLOW_KEYWORDS = [
+    "langchain", "llamaindex", "openai api", "gpt api", "prompt engineering",
+    "chatgpt", "wrapper", "chatbot", "called the openai", "api calls to gpt",
+]
+
+PRE_LLM_SUBSTANCE_KEYWORDS = [
+    "bm25", "tf-idf", "elasticsearch", "solr", "learning to rank", "ltr",
+    "word2vec", "glove", "lstm", "svm", "random forest", "gradient boost",
+    "xgboost", "collaborative filtering", "matrix factorization",
+    "click-through", "ctr", "feature engineering", "logistic regression",
+    "inverted index", "ranking model", "recommendation engine",
+]
+
+# --- CV/Speech/Robotics without NLP/IR exposure (JD-stated disqualifier) ---
+CV_SPEECH_ROBOTICS_KEYWORDS = [
+    "image classification", "object detection", "image segmentation",
+    "computer vision", "opencv", "yolo", "cnn", "convolutional",
+    "speech recognition", "asr", "tts", "speech synthesis", "audio",
+    "robotics", "slam", "ros", "lidar", "autonomous", "control system",
+]
+
+NLP_IR_OVERLAP_KEYWORDS = [
+    "nlp", "natural language", "text", "retrieval", "search", "ranking",
+    "embedding", "semantic", "bert", "transformer", "language model",
+    "document", "query", "rag",
+]
+
+# --- Closed-source-only, no external validation (soft signal, JD-stated) ---
+EXTERNAL_VALIDATION_KEYWORDS = [
+    "open source", "open-source", "github", "published", "paper",
+    "conference", "talk", "blog", "kaggle", "arxiv", "patent",
+]
