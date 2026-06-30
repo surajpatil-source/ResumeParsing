@@ -16,7 +16,7 @@ pip install -r requirements.txt
 python precompute.py --candidates Dataset/candidates.jsonl --jd Dataset/job_description.docx
 ```
 
-This takes ~5 minutes on GPU or ~30 minutes on CPU. Creates artifacts in `precomputed/`.
+This takes ~50 minutes on a 4-core CPU (no GPU acceleration used). Creates artifacts in `precomputed/`.
 
 ### 3. Run ranking
 
@@ -24,7 +24,7 @@ This takes ~5 minutes on GPU or ~30 minutes on CPU. Creates artifacts in `precom
 python rank.py --candidates Dataset/candidates.jsonl --output submission.csv
 ```
 
-Produces `submission.csv` with the top 100 candidates ranked by fit score. Runs in ~18 seconds on CPU.
+Produces `submission.csv` with the top 100 candidates ranked by fit score. Runs in ~25-40 seconds on CPU.
 
 ### 4. Validate
 
@@ -47,9 +47,9 @@ python rank.py --candidates Dataset/candidates.jsonl --output submission.csv
 
 **3-layer scoring:**
 
-1. **Hard filters:** Remove honeypots, consulting-only careers, non-tech profiles
-2. **Composite fit score (0-1):** Skills (30%), Career relevance (25%), Title (15%), Semantic similarity (10%), Experience (10%), Location (5%), Education (5%)
-3. **Behavioral modifier (0.5-1.2x):** Availability, quality signals, notice period
+1. **Hard filters:** Remove honeypots, consulting-only careers (no product company experience), non-tech profiles, pure research/academic profiles (high ML signal, zero production evidence)
+2. **Composite fit score (0-1):** Skills (30%), Career relevance (25%), Title (10%), Semantic similarity (15%), Experience (10%), Location (5%), Education (5%)
+3. **Behavioral & trap-pattern penalties (multipliers):** Two-tier ghost-candidate detection (0.55-0.80x for inactive/unresponsive profiles, 0.80-1.05x normal range), job-hopper penalty (0.70-0.85x for short average tenure), LangChain-only-recent trap (0.65x), CV/speech-without-NLP trap (0.70x), closed-source-senior soft penalty (0.98x), visa-blocker penalty (0.55x for non-India + won't-relocate + remote-only), and a soft title/description-mismatch penalty
 
 ## Sandbox App
 
