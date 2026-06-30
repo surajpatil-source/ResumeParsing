@@ -217,17 +217,20 @@ def extract_trap_features(candidate: dict) -> dict:
     cv_speech_trap_penalty = 0.70 if is_cv_speech_trap else 1.0
 
     # --- Trap 3: senior, closed-source-only, no external validation (soft) ---
-    # Use the actual github_activity_score signal rather than text keyword
-    # matching — most job descriptions don't mention "github"/"paper" even
-    # for candidates who are genuinely active, so text search was firing
-    # on ~66% of the pool. The numeric signal is far more reliable.
+    # NOTE: github_activity_score is missing (-1) for ~65% of the entire
+    # candidate pool — this is a data-availability gap, not a meaningful
+    # "no external validation" signal. Treating a missing field the same as
+    # "confirmed no validation" would unfairly tax most senior candidates.
+    # Keeping this as a very light nudge (not a real penalty) so it only
+    # matters as a tiebreaker between otherwise-similar candidates, per the
+    # JD's own framing of this as a soft signal, not a disqualifier.
     github_score = candidate.get("redrob_signals", {}).get("github_activity_score", -1)
     has_external_validation = (
         github_score >= 20 or
         _count_keyword_hits(full_text, EXTERNAL_VALIDATION_KEYWORDS) > 0
     )
     is_closed_source_senior = yoe >= 5.0 and not has_external_validation
-    closed_source_penalty = 0.92 if is_closed_source_senior else 1.0
+    closed_source_penalty = 0.98 if is_closed_source_senior else 1.0
 
     return {
         "is_langchain_trap": is_langchain_trap,
