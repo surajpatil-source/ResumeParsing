@@ -75,6 +75,40 @@ if st.button("Rank Candidates", type="primary"):
             jd_norm = jd_embedding / (np.linalg.norm(jd_embedding) + 1e-10)
             emb_norms = np.linalg.norm(embeddings, axis=1, keepdims=True) + 1e-10
             embeddings_normed = embeddings / emb_norms
+        else:
+            # No precomputed 100K-scale index available (expected on a
+            # hosted sandbox where the large files are gitignored). Encode
+            # live instead, since the sample size here is small (<=100
+            # candidates) — this keeps semantic_sim meaningful in the
+            # sandbox demo rather than silently defaulting to 0 for everyone.
+            st.info("No precomputed embeddings found — encoding this sample live (sandbox mode).")
+            from sentence_transformers import SentenceTransformer
+
+            @st.cache_resource
+            def _load_model():
+                return SentenceTransformer("all-MiniLM-L6-v2")
+
+            model = _load_model()
+
+            def build_candidate_text(candidate: dict) -> str:
+                profile = candidate.get("profile", {})
+                parts = [profile.get("headline", ""), profile.get("summary", "")]
+                for job in candidate.get("career_history", []):
+                    if job.get("title"):
+                        parts.append(job["title"])
+                    if job.get("description"):
+                        parts.append(job["description"])
+                for skill in candidate.get("skills", []):
+                    parts.append(skill.get("name", ""))
+                return " ".join(p for p in parts if p).strip()
+
+            candidate_texts = [build_candidate_text(c) for c in candidates]
+            embeddings = model.encode(candidate_texts, show_progress_bar=False)
+            jd_embedding = model.encode([jd_text], show_progress_bar=False)[0]
+            candidate_id_to_idx = {c["candidate_id"]: i for i, c in enumerate(candidates)}
+            jd_norm = jd_embedding / (np.linalg.norm(jd_embedding) + 1e-10)
+            emb_norms = np.linalg.norm(embeddings, axis=1, keepdims=True) + 1e-10
+            embeddings_normed = embeddings / emb_norms
 
         scored = []
         for i, c in enumerate(candidates):
