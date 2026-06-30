@@ -14,6 +14,7 @@ from .config import (
     CV_SPEECH_ROBOTICS_KEYWORDS, NLP_IR_OVERLAP_KEYWORDS,
     EXTERNAL_VALIDATION_KEYWORDS,
 )
+from .honeypot import check_title_description_mismatch
 
 
 def _safe_lower(s) -> str:
@@ -232,6 +233,13 @@ def extract_trap_features(candidate: dict) -> dict:
     is_closed_source_senior = yoe >= 5.0 and not has_external_validation
     closed_source_penalty = 0.98 if is_closed_source_senior else 1.0
 
+    # --- Soft signal: tech title but non-tech career substance ---
+    # Downgraded from a hard honeypot filter (see honeypot.py) to a soft
+    # penalty here — this is a fit issue, not a data-impossibility issue,
+    # so it should reduce score, not remove the candidate entirely.
+    mismatch_score = check_title_description_mismatch(candidate)
+    title_desc_mismatch_penalty = 1.0 - (0.5 * mismatch_score)
+
     return {
         "is_langchain_trap": is_langchain_trap,
         "langchain_trap_penalty": langchain_trap_penalty,
@@ -239,6 +247,7 @@ def extract_trap_features(candidate: dict) -> dict:
         "cv_speech_trap_penalty": cv_speech_trap_penalty,
         "is_closed_source_senior": is_closed_source_senior,
         "closed_source_penalty": closed_source_penalty,
+        "title_desc_mismatch_penalty": title_desc_mismatch_penalty,
     }
 
 

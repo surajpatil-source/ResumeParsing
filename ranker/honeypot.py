@@ -119,12 +119,21 @@ def check_title_description_mismatch(candidate: dict) -> float:
 
 
 def compute_honeypot_probability(candidate: dict) -> float:
+    # NOTE: check_title_description_mismatch() is intentionally NOT included
+    # here. The spec defines honeypots narrowly as "subtly impossible
+    # profiles" (e.g. duration math that doesn't add up, expert skill with
+    # 0 duration, YOE exceeding career span). Title/description mismatch is
+    # a *fit* signal (tech title, non-tech career substance), not a data
+    # impossibility — it's already handled by title_relevance and
+    # career_relevance in scorer.py as a soft down-weight. Hard-filtering on
+    # it here was over-firing (~4,700 candidates vs the spec's stated ~80
+    # honeypots) and risked excluding legitimately rankable candidates
+    # rather than just structurally-impossible ones.
     scores = [
         check_duration_mismatch(candidate),
         check_expert_zero_duration(candidate),
         check_yoe_vs_career_span(candidate),
         check_start_after_end(candidate),
-        check_title_description_mismatch(candidate),
     ]
     combined = 0.0
     for s in scores:

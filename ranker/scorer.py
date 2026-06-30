@@ -64,7 +64,15 @@ def compute_final_score(features: dict, semantic_sim: float = 0.0) -> float:
     fit = compute_fit_score(features, semantic_sim)
     modifier = compute_behavioral_modifier(features)
     job_hopper_penalty = features.get("job_hopper_penalty", 1.0)
-    return fit * modifier * job_hopper_penalty
+    langchain_trap_penalty = features.get("langchain_trap_penalty", 1.0)
+    cv_speech_trap_penalty = features.get("cv_speech_trap_penalty", 1.0)
+    closed_source_penalty = features.get("closed_source_penalty", 1.0)
+    title_desc_mismatch_penalty = features.get("title_desc_mismatch_penalty", 1.0)
+    return (
+        fit * modifier * job_hopper_penalty *
+        langchain_trap_penalty * cv_speech_trap_penalty * closed_source_penalty *
+        title_desc_mismatch_penalty
+    )
 
 
 def should_hard_filter(features: dict, is_honeypot: bool) -> bool:
